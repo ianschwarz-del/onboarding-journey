@@ -1,106 +1,328 @@
-# Create the HTML file for download
-html_content = """<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>One Journey – Hotel Onboarding Intake Form</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<style>
-    body {font-family: Arial, sans-serif; background: #f5f5f5; padding: 20px; color: #222; margin: 0;}
-    .container {max-width: 700px; margin: auto; background: white; padding: 25px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);}
-    h1, h2 {margin-top: 0; color: #000;}
-    label {display: block; margin: 12px 0 6px; font-weight: bold;}
-    input, select, textarea {width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; margin-bottom: 10px; font-size: 14px;}
-    input[type="file"] {padding: 5px;}
-    button {background: #111827; color: white; padding: 12px 20px; border: none; border-radius: 6px; cursor: pointer; width: 100%; font-size: 15px; margin-top: 10px;}
-</style>
+  <meta charset="UTF-8">
+  <title>One Journey – Hotel Onboarding Intake Form</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f5f5;
+      padding: 20px;
+      color: #222;
+      margin: 0;
+    }
+    .container {
+      max-width: 700px;
+      margin: auto;
+      background: white;
+      padding: 25px;
+      border-radius: 10px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    h1, h2 {
+      margin-top: 0;
+      color: #000;
+    }
+    label {
+      display: block;
+      margin: 12px 0 6px;
+      font-weight: bold;
+    }
+    input, select, textarea {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      margin-bottom: 10px;
+      font-size: 14px;
+    }
+    input[type="file"] {
+      padding: 5px;
+    }
+    button {
+      background: #111827;
+      color: white;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      width: 100%;
+      font-size: 15px;
+      margin-top: 10px;
+    }
+    .lang-select {
+      margin-bottom: 20px;
+    }
+  </style>
+  <script>
+    function setLanguage(lang) {
+      document.querySelectorAll("[data-en]").forEach(function(el) {
+        const text = el.getAttribute("data-" + lang) || el.getAttribute("data-en");
+        if (text !== null) {
+          el.textContent = text;
+        }
+      });
+      // Placeholders
+      document.querySelectorAll("[data-ph-en]").forEach(function(el) {
+        const ph = el.getAttribute("data-ph-" + lang) || el.getAttribute("data-ph-en");
+        if (ph !== null) {
+          el.setAttribute("placeholder", ph);
+        }
+      });
+    }
+    document.addEventListener("DOMContentLoaded", function() {
+      setLanguage("en");
+    });
+  </script>
 </head>
 <body>
 <div class="container">
-<h1>One Journey – Hotel Onboarding Intake Form</h1>
 
-<form>
+  <h1
+    data-en="One Journey – Hotel Onboarding Intake Form"
+    data-es="One Journey – Formulario de incorporación de hotel">
+    One Journey – Hotel Onboarding Intake Form
+  </h1>
 
-<h2>Hotel Information</h2>
-<label>Hotel Name</label><input type="text" required>
-<label>Property Address</label><input type="text">
-<label>Your Name</label><input type="text" required>
-<label>Your Role</label><input type="text">
-<label>Email Address</label><input type="email" required>
-<label>Phone Number</label><input type="text">
+  <div class="lang-select">
+    <label
+      data-en="Language"
+      data-es="Idioma">
+      Language
+    </label>
+    <select onchange="setLanguage(this.value)">
+      <option value="en">English</option>
+      <option value="es">Español</option>
+    </select>
+  </div>
 
-<h2>Finance / Accounts Payable</h2>
-<label>Vendor List Upload</label><input type="file" required>
-<label>OTA Commission Reports (Last 1–2 Months)</label><input type="file">
-<label>Primary AP Contact Name</label><input type="text">
-<label>AP Contact Email</label><input type="email">
+  <form>
 
-<h2>Revenue Management</h2>
-<label>OTA Partners</label>
-<select multiple size="6">
-    <option>Booking.com</option>
-    <option>Expedia</option>
-    <option>Agoda</option>
-    <option>Airbnb</option>
-    <option>Hotelbeds</option>
-    <option>Trip.com / CTrip</option>
-</select>
+    <h2
+      data-en="Hotel Information"
+      data-es="Información del hotel">
+      Hotel Information
+    </h2>
 
-<label>Channel Manager Used</label>
-<select>
-    <option>SiteMinder</option>
-    <option>Cloudbeds</option>
-    <option>SynXis</option>
-    <option>TravelClick</option>
-    <option>RateTiger</option>
-    <option>Other</option>
-    <option>None</option>
-</select>
+    <label
+      data-en="Hotel Name"
+      data-es="Nombre del hotel">
+      Hotel Name
+    </label>
+    <input type="text" required
+           data-ph-en="e.g. Grand Plaza Hotel"
+           data-ph-es="p. ej. Hotel Grand Plaza">
 
-<label>OTA Commission Structure</label>
-<textarea rows="3"></textarea>
+    <label
+      data-en="Property Address"
+      data-es="Dirección del establecimiento">
+      Property Address
+    </label>
+    <input type="text"
+           data-ph-en="Street, city, country"
+           data-ph-es="Calle, ciudad, país">
 
-<label>Upload Commission Structure Document (Optional)</label>
-<input type="file">
+    <label
+      data-en="Your Name"
+      data-es="Su nombre">
+      Your Name
+    </label>
+    <input type="text" required
+           data-ph-en="Full name"
+           data-ph-es="Nombre completo">
 
-<h2>PMS Information</h2>
-<label>PMS Platform Used</label>
-<select>
-    <option>Opera / Oracle</option>
-    <option>Protel</option>
-    <option>Mews</option>
-    <option>Cloudbeds</option>
-    <option>RoomKey</option>
-    <option>Maestro</option>
-    <option>StayNTouch</option>
-    <option>InnQuest</option>
-    <option>RMS</option>
-    <option>Other</option>
-</select>
+    <label
+      data-en="Your Role"
+      data-es="Su puesto">
+      Your Role
+    </label>
+    <input type="text"
+           data-ph-en="e.g. Director of Finance"
+           data-ph-es="p. ej. Director de Finanzas">
 
-<label>PMS Contact Name</label><input type="text">
-<label>Custom Integrations or PMS Notes</label><textarea rows="3"></textarea>
+    <label
+      data-en="Email Address"
+      data-es="Correo electrónico">
+      Email Address
+    </label>
+    <input type="email" required
+           data-ph-en="name@hotel.com"
+           data-ph-es="nombre@hotel.com">
 
-<h2>Final Confirmation</h2>
-<label>Authorization to Proceed</label>
-<select>
-    <option>Yes — Authorized</option>
-    <option>Not yet — Need approval</option>
-    <option>Please contact me</option>
-</select>
+    <label
+      data-en="Phone Number"
+      data-es="Número de teléfono">
+      Phone Number
+    </label>
+    <input type="text">
 
-<label>Additional Notes or Questions</label>
-<textarea rows="4"></textarea>
+    <h2
+      data-en="Finance / Accounts Payable"
+      data-es="Finanzas / Cuentas por pagar">
+      Finance / Accounts Payable
+    </h2>
 
-<button type="submit">Submit Intake Form</button>
-</form>
+    <label
+      data-en="Vendor List Upload"
+      data-es="Carga de lista de proveedores">
+      Vendor List Upload
+    </label>
+    <input type="file" required>
+
+    <label
+      data-en="OTA Commission Reports (Last 1–2 Months)"
+      data-es="Informes de comisiones de OTAs (últimos 1–2 meses)">
+      OTA Commission Reports (Last 1–2 Months)
+    </label>
+    <input type="file">
+
+    <label
+      data-en="Primary AP Contact Name"
+      data-es="Nombre del contacto principal de Cuentas por pagar">
+      Primary AP Contact Name
+    </label>
+    <input type="text">
+
+    <label
+      data-en="AP Contact Email"
+      data-es="Correo electrónico del contacto de Cuentas por pagar">
+      AP Contact Email
+    </label>
+    <input type="email">
+
+    <h2
+      data-en="Revenue Management"
+      data-es="Gestión de ingresos">
+      Revenue Management
+    </h2>
+
+    <label
+      data-en="OTA Partners"
+      data-es="Socios OTA">
+      OTA Partners
+    </label>
+    <select multiple size="6">
+      <option>Booking.com</option>
+      <option>Expedia</option>
+      <option>Agoda</option>
+      <option>Airbnb</option>
+      <option>Hotelbeds</option>
+      <option>Trip.com / CTrip</option>
+    </select>
+
+    <label
+      data-en="Channel Manager Used"
+      data-es="Gestor de canales utilizado">
+      Channel Manager Used
+    </label>
+    <select>
+      <option>SiteMinder</option>
+      <option>Cloudbeds</option>
+      <option>SynXis</option>
+      <option>TravelClick</option>
+      <option>RateTiger</option>
+      <option>Other</option>
+      <option>None</option>
+    </select>
+
+    <label
+      data-en="OTA Commission Structure"
+      data-es="Estructura de comisiones de OTAs">
+      OTA Commission Structure
+    </label>
+    <textarea rows="3"
+              data-ph-en="Briefly describe your typical OTA commissions."
+              data-ph-es="Describa brevemente sus comisiones habituales con OTAs."></textarea>
+
+    <label
+      data-en="Upload Commission Structure Document (Optional)"
+      data-es="Subir documento de estructura de comisiones (opcional)">
+      Upload Commission Structure Document (Optional)
+    </label>
+    <input type="file">
+
+    <h2
+      data-en="PMS Information"
+      data-es="Información del PMS">
+      PMS Information
+    </h2>
+
+    <label
+      data-en="PMS Platform Used"
+      data-es="Plataforma PMS utilizada">
+      PMS Platform Used
+    </label>
+    <select>
+      <option>Opera / Oracle</option>
+      <option>Protel</option>
+      <option>Mews</option>
+      <option>Cloudbeds</option>
+      <option>RoomKey</option>
+      <option>Maestro</option>
+      <option>StayNTouch</option>
+      <option>InnQuest</option>
+      <option>RMS</option>
+      <option>Other</option>
+    </select>
+
+    <label
+      data-en="PMS Contact Name"
+      data-es="Nombre del contacto de PMS">
+      PMS Contact Name
+    </label>
+    <input type="text">
+
+    <label
+      data-en="Custom Integrations or PMS Notes"
+      data-es="Integraciones personalizadas o notas sobre el PMS">
+      Custom Integrations or PMS Notes
+    </label>
+    <textarea rows="3"></textarea>
+
+    <h2
+      data-en="Final Confirmation"
+      data-es="Confirmación final">
+      Final Confirmation
+    </h2>
+
+    <label
+      data-en="Authorization to Proceed"
+      data-es="Autorización para continuar">
+      Authorization to Proceed
+    </label>
+    <select>
+      <option
+        data-en="Yes — Authorized"
+        data-es="Sí — Autorizado">
+        Yes — Authorized
+      </option>
+      <option
+        data-en="Not yet — Need approval"
+        data-es="Todavía no — Necesitamos aprobación interna">
+        Not yet — Need approval
+      </option>
+      <option
+        data-en="Please contact me"
+        data-es="Por favor, contáctenme">
+        Please contact me
+      </option>
+    </select>
+
+    <label
+      data-en="Additional Notes or Questions"
+      data-es="Notas o preguntas adicionales">
+      Additional Notes or Questions
+    </label>
+    <textarea rows="4"></textarea>
+
+    <button type="submit"
+            data-en="Submit Intake Form"
+            data-es="Enviar formulario de incorporación">
+      Submit Intake Form
+    </button>
+
+  </form>
 </div>
 </body>
 </html>
-"""
-
-file_path = "/mnt/data/onejourney-intake-form.html"
-with open(file_path, "w") as f:
-    f.write(html_content)
-
-file_path
