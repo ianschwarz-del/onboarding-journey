@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Hotel Card Payments Hub | Interactive Learning & Calculator</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root {
+      --bg: #020617;
+      --bg-soft: #0b1220;
+      --card: #020617;
+      --accent: #38bdf8;
+      --accent-strong: #0ea5e9;
+      --text-main: #e5e7eb;
+      --text-soft: #9ca3af;
+      --border-subtle: rgba(148, 163, 184, 0.5);
+      --danger: #fb7185;
+      --success: #4ade80;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top, #111827 0, #020617 55%);
+      color: var(--text-main);
+      min-height: 100vh;
+      padding: 32px 16px 40px;
+    }
+    .page { max-width: 1120px; margin: 0 auto; }
+    header { margin-bottom: 22px; }
+    .pill {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 12px; padding: 4px 10px; border-radius: 999px;
+      background: rgba(15,23,42,0.9);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-soft); margin-bottom: 10px;
+    }
+    .pill-dot {
+      width: 7px; height: 7px; border-radius: 999px;
+      background: var(--accent); box-shadow: 0 0 0 6px rgba(56,189,248,0.18);
+    }
+    h1 {
+      font-size: clamp(26px, 4vw, 34px); line-height: 1.1; margin-bottom: 8px;
+    }
+    h1 span { color: var(--accent); }
+    header p {
+      max-width: 720px; font-size: 14px; color: var(--text-soft); line-height: 1.5;
+    }
+
+    .shell {
+      border-radius: 24px;
+      background: radial-gradient(circle at top left,#0f172a,#020617);
+      border: 1px solid var(--border-subtle);
+      box-shadow: 0 20px 50px rgba(15,23,42,0.9);
+      padding: 16px 16px 18px;
+    }
+    .tabs {
+      display: inline-flex; border-radius: 999px;
+      background: rgba(15,23,42,0.95);
+      border: 1px solid rgba(148,163,184,0.5);
+      padding: 3px; margin-bottom: 16px;
+    }
+    .tab-btn {
+      border: none; outline: none; cursor: pointer;
+      border-radius: 999px; padding: 6px 13px;
+      font-size: 12px; color: var(--text-soft);
+      background: transparent; display: inline-flex;
+      align-items: center; gap: 6px;
+      transition: background 0.15s ease, color 0.15s ease;
+    }
+    .tab-btn span.dot {
+      width: 6px; height: 6px; border-radius: 999px; background: transparent;
+    }
+    .tab-btn.active {
+      background: rgba(56,189,248,0.12);
+      color: var(--accent-strong);
+    }
+    .tab-btn.active span.dot { background: var(--accent); }
+
+    .tab-label {
+      font-size: 11px; text-transform: uppercase;
+      letter-spacing: 0.14em; color: var(--text-soft);
+      margin-bottom: 6px;
+    }
+
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    .grid-two {
+      display: grid;
+      grid-template-columns: minmax(0, 6fr) minmax(0, 5fr);
+      gap: 18px;
+    }
+    @media (max-width: 900px) { .grid-two { grid-template-columns: 1fr; } }
+
+    .card {
+      border-radius: 18px;
+      padding: 14px 14px 16px;
+      background: linear-gradient(130deg,rgba(15,23,42,0.98),rgba(15,23,42,0.98));
+      border: 1px solid var(--border-subtle);
+    }
+    .card-title {
+      font-size: 15px; margin-bottom: 6px;
+    }
+    .card-sub {
+      font-size: 12px; color: var(--text-soft); margin-bottom: 10px;
+    }
+
+    /* Flow map styles */
+    .flow-map {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      grid-template-rows: auto auto;
+      gap: 10px;
+      font-size: 12px;
+    }
+    @media (max-width: 900px) {
+      .flow-map { grid-template-columns: 1fr; }
+    }
+    .flow-node {
+      border-radius: 14px;
+      padding: 8px 9px;
+      background: rgba(15,23,42,0.96);
+      border: 1px solid rgba(148,163,184,0.7);
+      cursor: pointer;
+      transition: border 0.15s ease, transform 0.1s ease,
+        box-shadow 0.15s ease, background 0.15s ease;
+    }
+    .flow-node:hover {
+      border-color: var(--accent-strong);
+      transform: translateY(-1px);
+      box-shadow: 0 10px 26px rgba(15,23,42,0.8);
+    }
+    .flow-node.active {
+      background: radial-gradient(circle at top left,rgba(56,189,248,0.25),rgba(8,47,73,0.9));
+      border-color: var(--accent-strong);
+    }
+    .flow-node-label {
+      font-size: 11px; text-transform: uppercase;
+      letter-spacing: 0.12em; color: var(--text-soft); margin-bottom: 2px;
+    }
+    .flow-node-title {
+      font-size: 13px; margin-bottom: 2px;
+    }
+    .flow-node-meta {
+      font-size: 11px; color: var(--text-soft);
+    }
+    .flow-detail {
+      margin-top: 10px; font-size: 13px;
+      color: var(--text-soft); line-height: 1.5;
+    }
+
+    /* Walkthrough mini */
+    .lesson-mini-title {
+      font-size: 14px; margin-bottom: 6px;
+    }
+    .lesson-mini-body p {
+      font-size: 12px; color: var(--text-soft); line-height: 1.55;
+    }
+    .lesson-mini-body p + p { margin-top: 6px; }
+    .lesson-mini-nav {
+      margin-top: 10px; display: flex; justify-content: space-between; align-items: center;
+    }
+    .badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      border-radius: 999px; border: 1px solid rgba(148,163,184,0.6);
+      padding: 2px 8px; font-size: 11px; margin-top: 8px;
+      color: var(--text-soft);
+    }
+    .badge span { width: 6px; height: 6px; border-radius: 999px; }
+    .badge .danger-dot { background: var(--danger); }
+    .badge .success-dot { background: var(--success); }
+
+    /* Calculator */
+    .inputs {
+      display: flex; flex-direction: column; gap: 10px; margin-bottom: 12px;
+    }
+    .field { display: flex; flex-direction: column; gap: 3px; }
+    .field label {
+      font-size: 11px; text-transform: uppercase;
+      letter-spacing: 0.12em; color: var(--text-soft);
+    }
+    .field input {
+      background: rgba(15,23,42,0.9);
+      border-radius: 999px; border: 1px solid rgba(148,163,184,0.6);
+      padding: 7px 10px; font-size: 13px; color: var(--text-main);
+      outline: none;
+    }
+    .field input::placeholder { color: #4b5563; }
+    .field input:focus {
+      border-color: var(--accent); box-shadow: 0 0 0 1px rgba(56,189,248,0.45);
+    }
+    .metrics {
+      border-radius: 16px;
+      padding: 10px 11px;
+      background: radial-gradient(circle at top right,rgba(56,189,248,0.2),transparent 55%),
+                  rgba(15,23,42,0.96);
+      border: 1px solid rgba(148,163,184,0.7);
+    }
+    .metric-row {
+      display: flex; justify-content: space-between; align-items: baseline;
+      font-size: 12px; color: var(--text-soft);
+    }
+    .metric-row + .metric-row { margin-top: 6px; }
+    .metric-value {
+      font-size: 13px; color: var(--text-main);
+    }
+    .metric-value strong { color: var(--accent-strong); }
+    .metric-value.positive strong { color: var(--success); }
+    .metric-value.negative strong { color: var(--danger); }
+    .metrics-note { margin-top: 8px; font-size: 11px; color: var(--text-soft); }
+
+    button {
+      cursor: pointer; border-radius: 999px; border: 1px solid transparent;
+      background: rgba(15,23,42,0.9); color: var(--text-soft);
+      font-size: 12px; padding: 6px 12px; display: inline-flex;
+      align-items: center; gap: 6px; transition: background 0.15s ease,
+      color 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
+    }
+    button:hover { transform: translateY(-1px); }
+    button.primary {
+      background: var(--accent); color: #020617; font-weight: 600;
+    }
+    button.primary:hover { background: var(--accent-strong); }
+    .mini-progress {
+      font-size: 11px; color: var(--text-soft);
+    }
+
+    .cta {
+      margin-top: 14px; border-radius: 16px;
+      padding: 11px 12px;
+      background: linear-gradient(120deg,rgba(56,189,248,0.12),rgba(15,23,42,0.96));
+      border: 1px solid rgba(56,189,248,0.4);
+      font-size: 12px; color: var(--text-soft);
+    }
+    .cta-title { font-size: 13px; margin-bottom: 4px; color: var(--text-main); }
+    .cta a {
+      display: inline-block; margin-top: 6px; text-decoration: none;
+      background: var(--accent); color: #020617;
+      padding: 7px 13px; border-radius: 999px;
+      font-size: 12px; font-weight: 600;
+    }
+    .cta a:hover { background: var(--accent-strong); }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header>
+      <div class="pill">
+        <span class="pill-dot"></span>
+        Interactive hub • Hotel card payments & rebates
+      </div>
+      <h1>
+        Turn <span>card fees</span> into recovered room nights.
+      </h1>
+      <p>
+        Explore how money moves through your guest card payments, see how your
+        payables can fund rebates, and run your own numbers to estimate how
+        many bookings you could win back.
+      </p>
+    </header>
+
+    <div class="shell">
+      <div class="tab-label">Choose a view</div>
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="walkthrough">
+          <span class="dot"></span> Walkthrough
+        </button>
+        <button class="tab-btn" data-tab="flow">
+          <span class="dot"></span> Flow map
+        </button>
+        <button class="tab-btn" data-tab="calculator">
+          <span class="dot"></span> Impact calculator
+        </button>
+      </div>
+
+      <!-- Walkthrough tab -->
+      <div class="tab-panel active" id="tab-walkthrough">
+        <div class="grid-two">
+          <div class="card">
+            <div class="card-title" id="mini-lesson-title"></div>
+            <div class="card-sub" id="mini-lesson-tag"></div>
+            <div class="lesson-mini-body" id="mini-lesson-body"></div>
+            <div class="lesson-mini-nav">
+              <button id="mini-prev">← Back</button>
+              <span class="mini-progress" id="mini-progress"></span>
+              <button class="primary" id="mini-next">Next →</button>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">At a glance</div>
+            <div class="card-sub">
+              Using the example from the walkthrough: €8M in guest card volume,
+              3% fee on receivables, and €6.4M in payables at a 1.25% rebate.
+            </div>
+            <div class="metrics">
+              <div class="metric-row">
+                <span>Annual card volume (guests)</span>
+                <span class="metric-value"><strong>€8,000,000</strong></span>
+              </div>
+              <div class="metric-row">
+                <span>Fees paid at 3%</span>
+                <span class="metric-value negative"><strong>€240,000</strong></span>
+              </div>
+              <div class="metric-row">
+                <span>Eligible payables volume</span>
+                <span class="metric-value"><strong>€6,400,000</strong></span>
+              </div>
+              <div class="metric-row">
+                <span>Rebate income at 1.25%</span>
+                <span class="metric-value positive"><strong>€80,000</strong></span>
+              </div>
+              <div class="metric-row">
+                <span>Share of card fees recouped</span>
+                <span class="metric-value"><strong>≈ 33%</strong></span>
+              </div>
+            </div>
+            <div class="cta">
+              <div class="cta-title">Next step: plug in your numbers</div>
+              <div>
+                Open the calculator tab and use your own volumes, ADR, and
+                rebate expectations to see how this plays out for your hotel.
+              </div>
+              <a href="#" onclick="activateTab('calculator'); return false;">
+                Open impact calculator →
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Flow map tab -->
+      <div class="tab-panel" id="tab-flow">
+        <div class="grid-two">
+          <div class="card">
+            <div class="card-title">Money movement: receivables vs payables</div>
+            <div class="card-sub">
+              Click any part of the flow to see what happens there, who gets paid,
+              and whether it’s a cost or an opportunity for the hotel.
+            </div>
+            <div class="flow-map" id="flow-map">
+              <!-- nodes are injected via JS -->
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title" id="flow-detail-title">Select a node</div>
+            <div class="card-sub" id="flow-detail-sub">
+              Start on the left with the guest payment, then follow the arrows through
+              the issuing bank, card network, and processor. Finally compare that to
+              the payables side on the right.
+            </div>
+            <div class="flow-detail" id="flow-detail-body"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Calculator tab -->
+      <div class="tab-panel" id="tab-calculator">
+        <div class="grid-two">
+          <div class="card">
+            <div class="card-title">Run your own numbers</div>
+            <div class="card-sub">
+              Use live values for your hotel. This is a simple directional model—not
+              a quote—but it makes the trade-offs tangible.
+            </div>
+            <div class="inputs">
+              <div class="field">
+                <label for="cardVolume">Annual guest card volume (€)</label>
+                <input id="cardVolume" type="number" placeholder="8000000" min="0" />
+              </div>
+              <div class="field">
+                <label for="feeRate">Card fee on receivables (%)</label>
+                <input id="feeRate" type="number" placeholder="3" min="0" step="0.1" />
+              </div>
+              <div class="field">
+                <label for="payablesVolume">Eligible payables volume (€)</label>
+                <input id="payablesVolume" type="number" placeholder="6400000" min="0" />
+              </div>
+              <div class="field">
+                <label for="rebateRate">Rebate rate on payables (%)</label>
+                <input id="rebateRate" type="number" placeholder="1.25" min="0" step="0.05" />
+              </div>
+              <div class="field">
+                <label for="adr">Average daily rate (€)</label>
+                <input id="adr" type="number" placeholder="150" min="0" />
+              </div>
+              <div class="field">
+                <label for="nightsPerBooking">Average nights per booking</label>
+                <input id="nightsPerBooking" type="number" placeholder="3" min="1" step="0.5" />
+              </div>
+            </div>
+            <button class="primary" id="calc-btn">Recalculate</button>
+          </div>
+          <div class="card">
+            <div class="card-title">Estimated impact</div>
+            <div class="metrics" id="calc-metrics">
+              <div class="metric-row">
+                <span>Fees paid on guest card volume</span>
+                <span class="metric-value negative" id="out-fees">€0</span>
+              </div>
+              <div class="metric-row">
+                <span>Rebate income from payables</span>
+                <span class="metric-value positive" id="out-rebate">€0</span>
+              </div>
+              <div class="metric-row">
+                <span>Share of fees recouped</span>
+                <span class="metric-value" id="out-share">0%</span>
+              </div>
+              <div class="metric-row">
+                <span>Room nights lost to card fees</span>
+                <span class="metric-value" id="out-lost-nights">0</span>
+              </div>
+              <div class="metric-row">
+                <span>Room nights recovered via rebate</span>
+                <span class="metric-value positive" id="out-rec-nights">0</span>
+              </div>
+              <div class="metric-row">
+                <span>Bookings recovered (avg nights)</span>
+                <span class="metric-value positive" id="out-rec-bookings">0</span>
+              </div>
+            </div>
+            <div class="metrics-note">
+              Outputs are directional only. For a detailed analysis, you’d plug in
+              your exact mix of card types, supplier eligibility, and negotiated
+              rebate schedules.
+            </div>
+            <div class="cta">
+              <div class="cta-title">Turn this into a working plan</div>
+              <div>
+                Share this view with your DOF, GM, or ownership group and talk
+                through what card fees and payables strategy should look like
+                over the next 12–24 months.
+              </div>
+              <a
+                href="https://calendar.app.google/zsLmzwzKaDgyyJWL6"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Book a walkthrough →
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    // --- Tabs ---
+    const tabButtons = document.querySelectorAll(".tab-btn");
+    const panels = document.querySelectorAll(".tab-panel");
+    function activateTab(key) {
+      tabButtons.forEach(btn => {
+        const active = btn.dataset.tab === key;
+        btn.classList.toggle("active", active);
+      });
+      panels.forEach(p => {
+        p.classList.toggle("active", p.id === "tab-" + key);
+      });
+    }
+    tabButtons.forEach(btn =>
+      btn.addEventListener("click", () => activateTab(btn.dataset.tab))
+    );
+
+    // --- Walkthrough mini (reuse compressed version) ---
+    const miniLessons = [
+      {
+        tag: "Lesson 1 · Receivables",
+        title: "€8M on cards, €240k in fees.",
+        body: `
+          <p>Your guests pay about <strong>€8,000,000</strong> per year on cards.
+          At a 3% fee, the hotel pays roughly <strong>€240,000</strong> just to
+          accept those payments.</p>
+          <p>That money is split between issuing banks, card networks, and your
+          processor. The hotel rarely sees any of it again.</p>
+          <div class="badge"><span class="danger-dot"></span><span>All cost, no rebate.</span></div>
+        `
+      },
+      {
+        tag: "Lesson 2 · Translate into room nights",
+        title: "Card fees equal real bookings.",
+        body: `
+          <p>With a blended ADR of <strong>€150</strong>, that €240,000
+          equates to around <strong>1,600 room nights</strong> or
+          <strong>~533 bookings</strong> at three nights each.</p>
+          <p>It’s easier to talk about lost demand than abstract basis points.</p>
+        `
+      },
+      {
+        tag: "Lesson 3 · Payables as a lever",
+        title: "Use €6.4M in payables to fight back.",
+        body: `
+          <p>Your hotel might send <strong>€6,400,000</strong> or more per year
+          to suppliers: booking commissions, media, amenities and more.</p>
+          <p>When this spend runs over rebate-eligible rails, the supplier pays
+          the fee and <strong>you</strong> earn a rebate.</p>
+          <div class="badge"><span class="success-dot"></span><span>Supplier-funded fee, hotel rebate.</span></div>
+        `
+      },
+      {
+        tag: "Lesson 4 · Recovering one-third of the loss",
+        title: "€80k recovered, 177 bookings reclaimed.",
+        body: `
+          <p>At a <strong>1.25%</strong> rebate on €6.4M in payables, the hotel
+          earns about <strong>€80,000</strong>.</p>
+          <p>That’s roughly <strong>533 room nights</strong> or
+          <strong>177 bookings</strong> at three nights each—about one third of
+          the original card-fee loss.</p>
+        `
+      }
+    ];
+    let miniIndex = 0;
+    const miniTitle = document.getElementById("mini-lesson-title");
+    const miniTag = document.getElementById("mini-lesson-tag");
+    const miniBody = document.getElementById("mini-lesson-body");
+    const miniPrev = document.getElementById("mini-prev");
+    const miniNext = document.getElementById("mini-next");
+    const miniProg = document.getElementById("mini-progress");
+
+    function renderMini(i) {
+      const l = miniLessons[i];
+      miniTitle.textContent = l.title;
+      miniTag.textContent = l.tag;
+      miniBody.innerHTML = l.body;
+      miniProg.textContent = `Step ${i + 1} of ${miniLessons.length}`;
+      miniPrev.disabled = i === 0;
+      miniNext.textContent = i === miniLessons.length - 1 ? "Restart →" : "Next →";
+    }
+    miniPrev.addEventListener("click", () => {
+      if (miniIndex === 0) return;
+      miniIndex -= 1;
+      renderMini(miniIndex);
+    });
+    miniNext.addEventListener("click", () => {
+      if (miniIndex === miniLessons.length - 1) {
+        miniIndex = 0;
+      } else miniIndex += 1;
+      renderMini(miniIndex);
+    });
+    renderMini(0);
+
+    // --- Flow map ---
+    const flowNodes = [
+      {
+        id: "guest",
+        label: "Receivables · Start",
+        title: "Guest pays for bookings & services",
+        meta: "Rooms, F&B, incidentals.",
+        body: `
+          The guest presents a credit card and pays the hotel for rooms,
+          F&B and extras. From their perspective, it’s a single transaction.
+          Behind the scenes, multiple parties touch that payment.
+        `
+      },
+      {
+        id: "issuer",
+        label: "Receivables",
+        title: "Issuing bank & card network (3% blended fee)",
+        meta: "Issuer + Visa/MC + processor.",
+        body: `
+          The issuing bank, card network and processor each take a slice of
+          the transaction. For the hotel, this shows up as a blended
+          <strong>~3% acceptance cost</strong> on card volume.
+        `
+      },
+      {
+        id: "hotel-recv",
+        label: "Receivables",
+        title: "Hotel receives net funds",
+        meta: "€7.76M on €8M volume.",
+        body: `
+          On €8M of guest spend at a 3% fee, the hotel nets about
+          <strong>€7.76M</strong>. The missing €240k has gone to the
+          payments ecosystem—and there is no rebate for the hotel.
+        `
+      },
+      {
+        id: "hotel-pay",
+        label: "Payables · Start",
+        title: "Hotel pays suppliers & partners",
+        meta: "Commissions, media, amenities.",
+        body: `
+          On the payables side, the hotel sends millions of euros each year
+          to OTAs, marketing partners, and operational vendors.
+          How those payments are made determines who pays the card fee.
+        `
+      },
+      {
+        id: "vcc",
+        label: "Payables",
+        title: "Virtual card / optimized payment rail",
+        meta: "Supplier-funded fee.",
+        body: `
+          When you use a virtual card or similar rail, the <strong>supplier</strong>
+          pays the interchange and processing cost. In exchange, they get
+          faster, more reliable payment and better remittance data.
+        `
+      },
+      {
+        id: "rebate",
+        label: "Payables",
+        title: "Hotel earns rebate on payables volume",
+        meta: "e.g. 1.25% on €6.4M.",
+        body: `
+          The payments partner shares a portion of the economics back with
+          the hotel. At <strong>1.25%</strong> on <strong>€6.4M</strong>,
+          that yields roughly <strong>€80,000</strong> in rebate income.
+          This offsets about one third of the original card-fee loss.
+        `
+      }
+    ];
+    const flowMapEl = document.getElementById("flow-map");
+    const flowDetailTitle = document.getElementById("flow-detail-title");
+    const flowDetailSub = document.getElementById("flow-detail-sub");
+    const flowDetailBody = document.getElementById("flow-detail-body");
+
+    function renderFlowNodes() {
+      flowMapEl.innerHTML = "";
+      flowNodes.forEach(node => {
+        const box = document.createElement("div");
+        box.className = "flow-node";
+        box.dataset.id = node.id;
+
+        const label = document.createElement("div");
+        label.className = "flow-node-label";
+        label.textContent = node.label;
+
+        const title = document.createElement("div");
+        title.className = "flow-node-title";
+        title.textContent = node.title;
+
+        const meta = document.createElement("div");
+        meta.className = "flow-node-meta";
+        meta.textContent = node.meta;
+
+        box.appendChild(label);
+        box.appendChild(title);
+        box.appendChild(meta);
+
+        box.addEventListener("click", () => selectNode(node.id));
+
+        flowMapEl.appendChild(box);
+      });
+    }
+    function selectNode(id) {
+      const node = flowNodes.find(n => n.id === id);
+      document.querySelectorAll(".flow-node").forEach(n => {
+        n.classList.toggle("active", n.dataset.id === id);
+      });
+      flowDetailTitle.textContent = node.title;
+      flowDetailSub.textContent = node.label + " • " + node.meta;
+      flowDetailBody.innerHTML = node.body;
+    }
+    renderFlowNodes();
+
+    // --- Calculator ---
+    const cardVolumeEl = document.getElementById("cardVolume");
+    const feeRateEl = document.getElementById("feeRate");
+    const payablesVolumeEl = document.getElementById("payablesVolume");
+    const rebateRateEl = document.getElementById("rebateRate");
+    const adrEl = document.getElementById("adr");
+    const nightsEl = document.getElementById("nightsPerBooking");
+
+    const outFees = document.getElementById("out-fees");
+    const outRebate = document.getElementById("out-rebate");
+    const outShare = document.getElementById("out-share");
+    const outLostNights = document.getElementById("out-lost-nights");
+    const outRecNights = document.getElementById("out-rec-nights");
+    const outRecBookings = document.getElementById("out-rec-bookings");
+
+    function fmtCurrency(v) {
+      if (!isFinite(v) || v <= 0) return "€0";
+      return (
+        "€" +
+        v.toLocaleString(undefined, {
+          maximumFractionDigits: 0
+        })
+      );
+    }
+    function fmtNumber(v) {
+      if (!isFinite(v) || v <= 0) return "0";
+      return v.toLocaleString(undefined, { maximumFractionDigits: 0 });
+    }
+
+    function recalc() {
+      const cardVol = parseFloat(cardVolumeEl.value || "0");
+      const feeRate = parseFloat(feeRateEl.value || "0") / 100;
+      const payVol = parseFloat(payablesVolumeEl.value || "0");
+      const rebateRate = parseFloat(rebateRateEl.value || "0") / 100;
+      const adr = parseFloat(adrEl.value || "0");
+      const nightsPerBooking = parseFloat(nightsEl.value || "1");
+
+      const fees = cardVol * feeRate;
+      const rebate = payVol * rebateRate;
+      const share = fees > 0 ? (rebate / fees) * 100 : 0;
+
+      const lostNights = adr > 0 ? fees / adr : 0;
+      const recNights = adr > 0 ? rebate / adr : 0;
+      const recBookings = nightsPerBooking > 0 ? recNights / nightsPerBooking : 0;
+
+      outFees.textContent = fmtCurrency(fees);
+      outRebate.textContent = fmtCurrency(rebate);
+      outShare.textContent = share.toFixed(1) + "%";
+      outLostNights.textContent = fmtNumber(lostNights);
+      outRecNights.textContent = fmtNumber(recNights);
+      outRecBookings.textContent = fmtNumber(recBookings);
+    }
+
+    document.getElementById("calc-btn").addEventListener("click", recalc);
+
+    // Seed defaults matching the story
+    cardVolumeEl.value = 8000000;
+    feeRateEl.value = 3;
+    payablesVolumeEl.value = 6400000;
+    rebateRateEl.value = 1.25;
+    adrEl.value = 150;
+    nightsEl.value = 3;
+    recalc();
+  </script>
+</body>
+</html>
