@@ -1,0 +1,942 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Hotel Payment Flow Map | Interactive Tool</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root {
+      --bg: #0f172a;
+      --bg-soft: #111827;
+      --bg-card: #020617;
+      --accent: #38bdf8;
+      --accent-soft: rgba(56, 189, 248, 0.12);
+      --accent-strong: #0ea5e9;
+      --text-main: #e5e7eb;
+      --text-soft: #9ca3af;
+      --border-subtle: rgba(148, 163, 184, 0.4);
+      --danger: #fb7185;
+      --success: #4ade80;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text",
+        "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top, #1f2937 0, #020617 55%);
+      color: var(--text-main);
+      min-height: 100vh;
+      padding: 32px 16px 40px;
+    }
+
+    .page {
+      max-width: 1120px;
+      margin: 0 auto;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid rgba(148, 163, 184, 0.4);
+      color: var(--text-soft);
+      margin-bottom: 10px;
+    }
+
+    .pill-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: var(--accent);
+      box-shadow: 0 0 0 6px rgba(56, 189, 248, 0.18);
+    }
+
+    header {
+      margin-bottom: 28px;
+    }
+
+    header h1 {
+      font-size: clamp(26px, 4vw, 34px);
+      line-height: 1.1;
+      margin-bottom: 10px;
+    }
+
+    header h1 span {
+      color: var(--accent);
+    }
+
+    header p {
+      max-width: 620px;
+      font-size: 14px;
+      color: var(--text-soft);
+      line-height: 1.5;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 3fr 2fr;
+      gap: 20px;
+    }
+
+    @media (max-width: 900px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .card {
+      background: linear-gradient(
+          120deg,
+          rgba(15, 23, 42, 0.96),
+          rgba(15, 23, 42, 0.96)
+        ),
+        radial-gradient(circle at top left, #0f172a, #020617);
+      border-radius: 18px;
+      border: 1px solid rgba(148, 163, 184, 0.4);
+      box-shadow: 0 18px 40px rgba(15, 23, 42, 0.7);
+      padding: 18px 18px 18px;
+      backdrop-filter: blur(16px);
+    }
+
+    .card + .card {
+      margin-top: 12px;
+    }
+
+    .flow-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      gap: 10px;
+    }
+
+    .flow-header-text h2 {
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--text-soft);
+      margin-bottom: 2px;
+    }
+
+    .flow-header-text p {
+      font-size: 13px;
+      color: var(--text-soft);
+    }
+
+    .flow-toggle {
+      display: inline-flex;
+      background: rgba(15, 23, 42, 0.9);
+      border-radius: 999px;
+      padding: 3px;
+      border: 1px solid rgba(148, 163, 184, 0.4);
+    }
+
+    .flow-toggle button {
+      border: none;
+      outline: none;
+      border-radius: 999px;
+      padding: 6px 12px;
+      font-size: 12px;
+      background: transparent;
+      color: var(--text-soft);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: background 0.15s ease, color 0.15s ease;
+    }
+
+    .flow-toggle button span.dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: transparent;
+    }
+
+    .flow-toggle button.active {
+      background: var(--accent-soft);
+      color: var(--accent-strong);
+    }
+
+    .flow-toggle button.active span.dot {
+      background: var(--accent);
+    }
+
+    .flow-toggle button.manual span.dot {
+      background: var(--danger);
+    }
+
+    .flow-toggle button.manual.active span.dot {
+      background: var(--danger);
+    }
+
+    .flow-toggle button.automated span.dot {
+      background: var(--success);
+    }
+
+    .flow-toggle button.automated.active span.dot {
+      background: var(--success);
+    }
+
+    .flow-title {
+      font-size: 16px;
+      margin-bottom: 10px;
+    }
+
+    .flow-description {
+      font-size: 13px;
+      color: var(--text-soft);
+      margin-bottom: 14px;
+    }
+
+    .steps {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .step {
+      border-radius: 14px;
+      border: 1px solid rgba(148, 163, 184, 0.45);
+      padding: 10px 11px;
+      background: radial-gradient(
+          circle at top left,
+          rgba(56, 189, 248, 0.12),
+          transparent 55%
+        ),
+        rgba(15, 23, 42, 0.96);
+      cursor: pointer;
+      transition: border 0.15s ease, background 0.15s ease,
+        transform 0.12s ease;
+    }
+
+    .step:hover {
+      border-color: var(--accent);
+      transform: translateY(-1px);
+    }
+
+    .step-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .step-main {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .step-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--text-soft);
+    }
+
+    .step-title {
+      font-size: 13px;
+    }
+
+    .step-subtitle {
+      font-size: 12px;
+      color: var(--text-soft);
+    }
+
+    .step-metric {
+      text-align: right;
+      font-size: 11px;
+      color: var(--text-soft);
+    }
+
+    .step-metric strong {
+      font-size: 13px;
+      color: var(--accent-strong);
+    }
+
+    .step-chevron {
+      margin-left: 8px;
+      font-size: 14px;
+      color: var(--text-soft);
+    }
+
+    .step-details {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--text-soft);
+      line-height: 1.5;
+      display: none;
+    }
+
+    .step-details p + p {
+      margin-top: 4px;
+    }
+
+    .step-details span.badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 2px 7px;
+      border-radius: 999px;
+      font-size: 11px;
+      border: 1px solid rgba(148, 163, 184, 0.5);
+      margin-right: 6px;
+    }
+
+    .step-details span.badge.danger {
+      border-color: rgba(248, 113, 113, 0.7);
+      color: #fecaca;
+    }
+
+    .step-details span.badge.success {
+      border-color: rgba(74, 222, 128, 0.7);
+      color: #bbf7d0;
+    }
+
+    .step.expanded {
+      background: radial-gradient(
+          circle at top left,
+          rgba(56, 189, 248, 0.25),
+          rgba(8, 47, 73, 0.8)
+        ),
+        rgba(15, 23, 42, 0.96);
+      border-color: var(--accent);
+    }
+
+    .step.expanded .step-chevron {
+      transform: rotate(90deg);
+      color: var(--accent);
+    }
+
+    .step.expanded .step-details {
+      display: block;
+    }
+
+    /* Sidebar / Calculator */
+
+    .sidebar-title {
+      font-size: 14px;
+      margin-bottom: 4px;
+    }
+
+    .sidebar-subtitle {
+      font-size: 12px;
+      color: var(--text-soft);
+      margin-bottom: 12px;
+    }
+
+    .inputs {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .field label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--text-soft);
+    }
+
+    .field input {
+      background: rgba(15, 23, 42, 0.9);
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.6);
+      padding: 7px 10px;
+      font-size: 13px;
+      color: var(--text-main);
+      outline: none;
+    }
+
+    .field input::placeholder {
+      color: #4b5563;
+    }
+
+    .field input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.5);
+    }
+
+    .metrics {
+      border-radius: 14px;
+      padding: 10px 11px;
+      background: radial-gradient(
+          circle at top right,
+          rgba(56, 189, 248, 0.18),
+          transparent 55%
+        ),
+        rgba(15, 23, 42, 0.96);
+      border: 1px solid rgba(148, 163, 184, 0.5);
+      margin-bottom: 12px;
+    }
+
+    .metrics-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      font-size: 12px;
+      color: var(--text-soft);
+    }
+
+    .metrics-row + .metrics-row {
+      margin-top: 6px;
+    }
+
+    .metrics-value {
+      font-size: 13px;
+      color: var(--text-main);
+    }
+
+    .metrics-value strong {
+      color: var(--accent-strong);
+    }
+
+    .metrics-value.positive strong {
+      color: var(--success);
+    }
+
+    .metrics-tagline {
+      margin-top: 8px;
+      font-size: 11px;
+      color: var(--text-soft);
+    }
+
+    .hint {
+      font-size: 11px;
+      color: var(--text-soft);
+      margin-top: 6px;
+    }
+
+    .hint span {
+      color: var(--accent-strong);
+      font-weight: 500;
+    }
+
+    .footer-note {
+      font-size: 10px;
+      color: var(--text-soft);
+      margin-top: 10px;
+      border-top: 1px dashed rgba(148, 163, 184, 0.4);
+      padding-top: 8px;
+    }
+
+    .footer-note span {
+      color: var(--accent-strong);
+    }
+
+    /* CTA block */
+
+    .cta {
+      margin-top: 20px;
+      padding: 18px;
+      border-radius: 18px;
+      background: linear-gradient(
+          120deg,
+          rgba(56, 189, 248, 0.1),
+          rgba(15, 23, 42, 0.88)
+        ),
+        rgba(2, 6, 23, 0.9);
+      border: 1px solid rgba(56, 189, 248, 0.32);
+      box-shadow: 0 12px 28px rgba(56, 189, 248, 0.08);
+    }
+
+    .cta-title {
+      font-size: 15px;
+      margin-bottom: 6px;
+      color: var(--text-main);
+    }
+
+    .cta-text {
+      font-size: 13px;
+      color: var(--text-soft);
+      line-height: 1.45;
+      margin-bottom: 14px;
+    }
+
+    .cta-button {
+      display: inline-block;
+      background: var(--accent);
+      color: #0c111f;
+      font-size: 13px;
+      padding: 10px 16px;
+      border-radius: 999px;
+      text-decoration: none;
+      font-weight: 600;
+      transition: background 0.15s ease, transform 0.15s ease;
+    }
+
+    .cta-button:hover {
+      background: var(--accent-strong);
+      transform: translateY(-1px);
+    }
+
+    .cta-footnote {
+      margin-top: 10px;
+      font-size: 11px;
+      color: var(--text-soft);
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header>
+      <div class="pill">
+        <span class="pill-dot"></span>
+        Interactive map • Hotel payment operations
+      </div>
+      <h1>
+        See how <span>modern payment automation</span> turns hotel AP into a
+        revenue driver.
+      </h1>
+      <p>
+        Click through the flow to compare a manual AP process with an automated,
+        optimized payment stack. Then plug in your numbers to see estimated
+        hours saved and rebate potential at a 1.25% return.
+      </p>
+    </header>
+
+    <div class="layout">
+      <!-- LEFT: Flow -->
+      <div class="card">
+        <div class="flow-header">
+          <div class="flow-header-text">
+            <h2>Payment Flow</h2>
+            <p id="flow-label">Manual AP workflow</p>
+          </div>
+          <div class="flow-toggle">
+            <button
+              class="manual active"
+              data-flow="manual"
+              type="button"
+              aria-label="Manual flow"
+            >
+              <span class="dot"></span>
+              Manual
+            </button>
+            <button
+              class="automated"
+              data-flow="automated"
+              type="button"
+              aria-label="Automated flow"
+            >
+              <span class="dot"></span>
+              Automated
+            </button>
+          </div>
+        </div>
+
+        <div class="flow-title" id="flow-title">
+          Manual payment flow (typical)
+        </div>
+        <div class="flow-description" id="flow-description">
+          Invoices arrive by email. Approvals bounce around inboxes. AP logins,
+          bank portals, and spreadsheets hold everything together. It works…
+          but it’s slow, error-prone, and leaves rebate dollars on the table.
+        </div>
+
+        <div class="steps" id="steps"></div>
+      </div>
+
+      <!-- RIGHT: Calculator / Summary + CTA -->
+      <div class="card">
+        <div class="sidebar-title">Savings & rebate simulator</div>
+        <div class="sidebar-subtitle">
+          Use your own numbers to see the potential impact of moving from manual
+          to automated hotel payments.
+        </div>
+
+        <div class="inputs">
+          <div class="field">
+            <label for="invoicesPerMonth">Invoices per month</label>
+            <input
+              type="number"
+              id="invoicesPerMonth"
+              placeholder="e.g. 300"
+              min="0"
+            />
+          </div>
+
+          <div class="field">
+            <label for="vendorSpend">
+              Monthly vendor spend (eligible for automated payments)
+            </label>
+            <input
+              type="number"
+              id="vendorSpend"
+              placeholder="e.g. 150000"
+              min="0"
+            />
+          </div>
+        </div>
+
+        <div class="metrics">
+          <div class="metrics-row">
+            <span>Processing hours per month (manual)</span>
+            <span class="metrics-value" id="manualHours">0 hrs</span>
+          </div>
+          <div class="metrics-row">
+            <span>Processing hours per month (automated)</span>
+            <span class="metrics-value" id="autoHours">0 hrs</span>
+          </div>
+          <div class="metrics-row">
+            <span>Estimated hours saved per month</span>
+            <span class="metrics-value positive" id="hoursSaved">0 hrs</span>
+          </div>
+          <div class="metrics-row">
+            <span>Estimated annual rebate at 1.25%</span>
+            <span class="metrics-value positive" id="rebateValue">$0</span>
+          </div>
+
+          <div class="metrics-tagline">
+            Based on an assumed 1.25% rebate rate on eligible vendor spend and
+            typical AP time per invoice in hotels running manual vs automated
+            flows.
+          </div>
+        </div>
+
+        <div class="hint">
+          Tip: Share this page with your <span>DOF, GM, or revenue lead</span>
+          and run the numbers together. It turns “automation” into a concrete
+          hours-and-dollars conversation.
+        </div>
+
+        <div class="footer-note">
+          All outputs are directional estimates only and not financial advice.
+          For a tailored breakdown, plug in your exact AP workflow and vendor
+          mix with your payments partner or automation provider.
+        </div>
+
+        <div class="cta">
+          <div class="cta-title">See this automated in your own hotel</div>
+          <div class="cta-text">
+            If you want a tailored walkthrough of how automated payments would
+            work in your operation—and what your true rebate potential looks
+            like—you can book a quick call below.
+          </div>
+
+          <a
+            href="https://calendar.app.google/zsLmzwzKaDgyyJWL6"
+            class="cta-button"
+            target="_blank"
+            rel="noopener noreferrer"
+            data-track="cta-walkthrough"
+          >
+            Book a Walkthrough →
+          </a>
+
+          <div class="cta-footnote">
+            No hard pitch. Just real numbers from your AP workflow.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // --- Flow data ---------------------------------------------------------
+    const flows = {
+      manual: {
+        label: "Manual AP workflow",
+        title: "Manual payment flow (typical)",
+        description:
+          "Invoices arrive by email. Approvals bounce around inboxes. AP logins, bank portals, and spreadsheets hold everything together. It works… but it’s slow, error-prone, and leaves rebate dollars on the table.",
+        steps: [
+          {
+            title: "Invoice received",
+            subtitle: "Emails, PDFs, uploads from vendors",
+            timePerInvoiceMinutes: 8,
+            description:
+              "Invoices land in inboxes or shared drives. Someone has to find them, download them, and get them into the AP workflow.",
+            risk: "Lost emails, delayed processing, missed early payment discounts.",
+          },
+          {
+            title: "Coding & approvals",
+            subtitle: "Manual GL coding, routing via email",
+            timePerInvoiceMinutes: 18,
+            description:
+              "AP or department heads code invoices to the right GL accounts and chase approvals via email or paper forms.",
+            risk: "Incorrect coding, slow approvals, and no clear audit trail.",
+          },
+          {
+            title: "Payment creation",
+            subtitle: "Typing into AP / banking portals",
+            timePerInvoiceMinutes: 7,
+            description:
+              "Payment data is keyed in by hand. Bank details, amounts, dates, and references are all entered manually.",
+            risk: "Typos, duplicate payments, and increased fraud exposure.",
+          },
+          {
+            title: "Execution",
+            subtitle: "Checks, ACH, wires, virtual cards",
+            timePerInvoiceMinutes: 12,
+            description:
+              "AP staff print checks, log into bank portals, or juggle multiple systems to release payments on time.",
+            risk: "Late payments, vendor friction, and fragmented payment data.",
+          },
+          {
+            title: "Reconciliation",
+            subtitle: "Matching payments to invoices & ledger",
+            timePerInvoiceMinutes: 12,
+            description:
+              "Paid invoices are matched back to bank statements and the accounting or PMS system—often in spreadsheets.",
+            risk: "Write-offs, unclaimed credits, and limited visibility for finance.",
+          },
+        ],
+      },
+      automated: {
+        label: "Automated, optimized AP & payments",
+        title: "Automated payment flow (modern)",
+        description:
+          "Invoices are captured automatically, routed by rules, and paid through an optimized rail mix. Reconciliation happens in the background while your team focuses on higher-value work.",
+        steps: [
+          {
+            title: "Smart invoice capture",
+            subtitle: "Email, portal, or direct feed",
+            timePerInvoiceMinutes: 2,
+            description:
+              "Invoices flow in through a central channel and are digitized automatically, with key fields extracted for you.",
+            benefit:
+              "Minimal handling of each invoice and a single source of truth.",
+          },
+          {
+            title: "Rules-based approvals",
+            subtitle: "Routing by vendor, department, or amount",
+            timePerInvoiceMinutes: 3,
+            description:
+              "Approval workflows run on rules. Approvers get mobile or email prompts, and every action is logged.",
+            benefit:
+              "Approvals move faster, with cleaner controls and an audit trail.",
+          },
+          {
+            title: "Automatic payment creation",
+            subtitle: "No re-keying or duplicate data entry",
+            timePerInvoiceMinutes: 2,
+            description:
+              "Once approved, payments are drafted automatically with the correct vendor, amount, and due date.",
+            benefit:
+              "Fewer errors, no repeated typing, and less time in banking portals.",
+          },
+          {
+            title: "Optimized payment methods",
+            subtitle: "Virtual card, ACH, or other rails",
+            timePerInvoiceMinutes: 3,
+            description:
+              "The system selects the best payment method per vendor to balance cost, speed, and rebate potential.",
+            benefit:
+              "More rebate revenue, fewer fees, and a consistent vendor experience.",
+          },
+          {
+            title: "Automatic reconciliation",
+            subtitle: "Ledger sync and matching",
+            timePerInvoiceMinutes: 3,
+            description:
+              "Payment data flows back into your ledger, with automated matching against invoices and bank records.",
+            benefit:
+              "Near real-time visibility for finance and significantly less manual cleanup.",
+          },
+        ],
+      },
+    };
+
+    // Calculate per-invoice totals
+    function totalMinutes(flowKey) {
+      return flows[flowKey].steps.reduce(
+        (sum, step) => sum + (step.timePerInvoiceMinutes || 0),
+        0
+      );
+    }
+
+    const perInvoiceMinutes = {
+      manual: totalMinutes("manual"),
+      automated: totalMinutes("automated"),
+    };
+
+    // --- DOM references ----------------------------------------------------
+    const stepsContainer = document.getElementById("steps");
+    const flowLabel = document.getElementById("flow-label");
+    const flowTitle = document.getElementById("flow-title");
+    const flowDescription = document.getElementById("flow-description");
+    const toggleButtons = document.querySelectorAll(".flow-toggle button");
+
+    const invoicesInput = document.getElementById("invoicesPerMonth");
+    const vendorSpendInput = document.getElementById("vendorSpend");
+
+    const manualHoursEl = document.getElementById("manualHours");
+    const autoHoursEl = document.getElementById("autoHours");
+    const hoursSavedEl = document.getElementById("hoursSaved");
+    const rebateValueEl = document.getElementById("rebateValue");
+
+    let currentFlow = "manual";
+
+    // --- Render flow steps -------------------------------------------------
+    function renderFlow(flowKey) {
+      const flow = flows[flowKey];
+      currentFlow = flowKey;
+
+      flowLabel.textContent = flow.label;
+      flowTitle.textContent = flow.title;
+      flowDescription.textContent = flow.description;
+
+      stepsContainer.innerHTML = "";
+
+      flow.steps.forEach((step, idx) => {
+        const stepEl = document.createElement("div");
+        stepEl.className = "step";
+        stepEl.dataset.index = idx;
+
+        const headerEl = document.createElement("div");
+        headerEl.className = "step-header";
+
+        const mainEl = document.createElement("div");
+        mainEl.className = "step-main";
+
+        const labelEl = document.createElement("div");
+        labelEl.className = "step-label";
+        labelEl.textContent = `Step ${idx + 1}`;
+
+        const titleEl = document.createElement("div");
+        titleEl.className = "step-title";
+        titleEl.textContent = step.title;
+
+        const subtitleEl = document.createElement("div");
+        subtitleEl.className = "step-subtitle";
+        subtitleEl.textContent = step.subtitle;
+
+        mainEl.appendChild(labelEl);
+        mainEl.appendChild(titleEl);
+        mainEl.appendChild(subtitleEl);
+
+        const metricEl = document.createElement("div");
+        metricEl.className = "step-metric";
+
+        const totalMinutesHere = step.timePerInvoiceMinutes || 0;
+        metricEl.innerHTML = `<div><strong>${totalMinutesHere} min</strong> per invoice</div>`;
+
+        const chevronEl = document.createElement("div");
+        chevronEl.className = "step-chevron";
+        chevronEl.textContent = "›";
+
+        headerEl.appendChild(mainEl);
+        headerEl.appendChild(metricEl);
+        headerEl.appendChild(chevronEl);
+
+        const detailsEl = document.createElement("div");
+        detailsEl.className = "step-details";
+
+        const p1 = document.createElement("p");
+        p1.textContent = step.description;
+        detailsEl.appendChild(p1);
+
+        if (flowKey === "manual" && step.risk) {
+          const p2 = document.createElement("p");
+          const badge = document.createElement("span");
+          badge.className = "badge danger";
+          badge.textContent = "Risk";
+          p2.appendChild(badge);
+          p2.append(step.risk);
+          detailsEl.appendChild(p2);
+        }
+
+        if (flowKey === "automated" && step.benefit) {
+          const p2 = document.createElement("p");
+          const badge = document.createElement("span");
+          badge.className = "badge success";
+          badge.textContent = "Benefit";
+          p2.appendChild(badge);
+          p2.append(step.benefit);
+          detailsEl.appendChild(p2);
+        }
+
+        stepEl.appendChild(headerEl);
+        stepEl.appendChild(detailsEl);
+
+        stepEl.addEventListener("click", () => {
+          stepEl.classList.toggle("expanded");
+        });
+
+        stepsContainer.appendChild(stepEl);
+      });
+
+      updateCalculator();
+    }
+
+    // --- Calculator logic --------------------------------------------------
+    function formatHours(hours) {
+      if (!isFinite(hours) || hours <= 0) return "0 hrs";
+      if (hours < 1) {
+        const minutes = Math.round(hours * 60);
+        return `${minutes} min`;
+      }
+      return `${hours.toFixed(1)} hrs`;
+    }
+
+    function formatCurrency(value) {
+      if (!isFinite(value) || value <= 0) return "$0";
+      return (
+        "$" +
+        value.toLocaleString(undefined, {
+          maximumFractionDigits: 0,
+        })
+      );
+    }
+
+    function updateCalculator() {
+      const invoicesPerMonth = parseFloat(invoicesInput.value) || 0;
+      const vendorSpend = parseFloat(vendorSpendInput.value) || 0;
+
+      const manualMinutes =
+        perInvoiceMinutes.manual * Math.max(invoicesPerMonth, 0);
+      const autoMinutes =
+        perInvoiceMinutes.automated * Math.max(invoicesPerMonth, 0);
+
+      const manualHours = manualMinutes / 60;
+      const autoHours = autoMinutes / 60;
+      const hoursSaved = Math.max(manualHours - autoHours, 0);
+
+      const monthlyRebate = vendorSpend * 0.0125;
+      const annualRebate = monthlyRebate * 12;
+
+      manualHoursEl.textContent = formatHours(manualHours);
+      autoHoursEl.textContent = formatHours(autoHours);
+      hoursSavedEl.textContent = formatHours(hoursSaved);
+      rebateValueEl.textContent = formatCurrency(annualRebate);
+    }
+
+    // --- Event listeners ---------------------------------------------------
+    toggleButtons.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const flowKey = btn.dataset.flow;
+        if (flowKey === currentFlow) return;
+
+        toggleButtons.forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+
+        renderFlow(flowKey);
+      });
+    });
+
+    invoicesInput.addEventListener("input", updateCalculator);
+    vendorSpendInput.addEventListener("input", updateCalculator);
+
+    // --- Initial render ----------------------------------------------------
+    renderFlow("manual");
+  </script>
+</body>
+</html>
